@@ -43,41 +43,26 @@ function generateAdvertisement() {
 
   for (var i = 0; i < ADV_NUMBER; i++) {
 
-    var advertisementAvatar = 'img/avatars/user' + '0' + (i + 1) + '.png';
-    var advertisementTitle = ADV_TITLE + ' № ' + (i + 1);
-    var advertisementPrice = getRandomNumber(MIN_PRICE, MAX_PRICE);
-    var advertisementType = getRandomArrayItem(ADV_TYPE);
-    var advertisementRooms = getRandomNumber(MIN_ROOMS, MAX_ROOMS);
-    var advertisementGuests = getRandomNumber(MIN_GUESTS, MAX_GUESTS);
-    var advertisementCheckin = getRandomArrayItem(ADV_CHECKIN);
-    var advertisementCheckout = getRandomArrayItem(ADV_CHECKOUT);
-    var advertisementFeatures = getRandomArrayItem(ADV_FEAUTURES);
-    var advertisementDescription = ADV_DESCRIPTION + ' № ' + (i + 1);
-    var advertisementPhotos = getRandomArrayItem(ADV_PHOTOS);
-    var randomLocationX = getRandomNumber(MIN_AXIS_X, maxAxisX);
-    var randomLocationY = getRandomNumber(MIN_AXIS_Y, MAX_AXIS_Y);
-    var advertisementAddress = randomLocationX + ', ' + randomLocationY;
-
     advertisements.push({
       author: {
-        avatar: advertisementAvatar,
+        avatar: 'img/avatars/user' + '0' + (i + 1) + '.png',
       },
       offer: {
-        title: advertisementTitle,
-        address: advertisementAddress,
-        price: advertisementPrice,
-        type: advertisementType,
-        rooms: advertisementRooms,
-        guests: advertisementGuests,
-        checkin: advertisementCheckin,
-        checkout: advertisementCheckout,
-        features: advertisementFeatures,
-        description: advertisementDescription,
-        photos: advertisementPhotos,
+        title: ADV_TITLE + ' № ' + (i + 1),
+        address: getRandomNumber(MIN_AXIS_X, maxAxisX) + ', ' + getRandomNumber(MIN_AXIS_Y, MAX_AXIS_Y),
+        price: getRandomNumber(MIN_PRICE, MAX_PRICE),
+        type: getRandomArrayItem(ADV_TYPE),
+        rooms: getRandomNumber(MIN_ROOMS, MAX_ROOMS),
+        guests: getRandomNumber(MIN_GUESTS, MAX_GUESTS),
+        checkin: getRandomArrayItem(ADV_CHECKIN),
+        checkout: getRandomArrayItem(ADV_CHECKOUT),
+        features: getRandomArrayItem(ADV_FEAUTURES),
+        description: ADV_DESCRIPTION + ' № ' + (i + 1),
+        photos: getRandomArrayItem(ADV_PHOTOS),
       },
       location: {
-        x: randomLocationX,
-        y: randomLocationY,
+        x: getRandomNumber(MIN_AXIS_X, maxAxisX),
+        y: getRandomNumber(MIN_AXIS_Y, MAX_AXIS_Y),
       }
 
     });
@@ -89,13 +74,13 @@ function generateAdvertisement() {
 var mapPins = document.querySelector('.map__pins');
 var templatePin = document.querySelector('#pin').content.querySelector('.map__pin');
 
-var renderPin = function (arr) {
+var renderPin = function (array) {
   var pinElement = templatePin.cloneNode(true);
 
-  pinElement.style.left = (arr.location.x - PIN_WIDTH / 2) + 'px';
-  pinElement.style.top = (arr.location.y - PIN_HEIGHT) + 'px';
-  pinElement.querySelector('img').src = arr.author.avatar;
-  pinElement.querySelector('img').alt = arr.offer.title;
+  pinElement.style.left = (array.location.x - PIN_WIDTH / 2) + 'px';
+  pinElement.style.top = (array.location.y - PIN_HEIGHT) + 'px';
+  pinElement.querySelector('img').src = array.author.avatar;
+  pinElement.querySelector('img').alt = array.offer.title;
 
   return pinElement;
 };
@@ -104,10 +89,10 @@ var renderPin = function (arr) {
 var renderDomPins = function () {
   var advertisements = generateAdvertisement();
   var fragment = document.createDocumentFragment();
-  for (var i = 0; i < ADV_NUMBER; i++) {
-    fragment.appendChild(renderPin(advertisements[i]));
-  }
+  advertisements.forEach(function (advertisement) {
+    fragment.appendChild(renderPin(advertisement));
+  });
   mapPins.appendChild(fragment);
 };
-
 renderDomPins();
+
