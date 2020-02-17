@@ -33,11 +33,21 @@ function getRandomNumber(min, max) {
 
 // Функция получения рандомного элемента в массиве
 function getRandomArrayItem(array) {
-  var randomIndex = getRandomNumber(array.length);
+  var randomIndex = Math.floor(Math.random() * array.length);
   return array[randomIndex];
 }
 
-// Функция создания массива из 8 сгенерированных JS объектов.
+// Функция получения суб массива - нового массива из массива
+function getRandomSubArray(array) {
+  var arraySize = getRandomNumber(1, array.length);
+  var subArray = [];
+  for (var i=0; i < arraySize; i++) {
+    subArray.push(getRandomArrayItem(array));
+  }
+  return subArray;
+}
+
+// Функция создания массива из 8 сгенерированных JS объектов
 function generateAdvertisement() {
   var advertisements = [];
 
@@ -56,9 +66,9 @@ function generateAdvertisement() {
         guests: getRandomNumber(MIN_GUESTS, MAX_GUESTS),
         checkin: getRandomArrayItem(ADV_CHECKIN),
         checkout: getRandomArrayItem(ADV_CHECKOUT),
-        features: getRandomArrayItem(ADV_FEAUTURES),
+        features: getRandomSubArray(ADV_FEAUTURES),
         description: ADV_DESCRIPTION + ' № ' + (i + 1),
-        photos: getRandomArrayItem(ADV_PHOTOS),
+        photos: getRandomSubArray(ADV_PHOTOS),
       },
       location: {
         x: getRandomNumber(MIN_AXIS_X, maxAxisX),
@@ -68,13 +78,14 @@ function generateAdvertisement() {
     });
   }
   return advertisements;
+
 }
 
-// Функция создания DOM-элемента на основе JS-объекта: DOM-элементы, соответствующие меткам на карте PIN
+// Функция создания DOM-элемента на основе JS-объекта: PIN
 var mapPins = document.querySelector('.map__pins');
-var templatePin = document.querySelector('#pin').content.querySelector('.map__pin');
 
 var renderPin = function (array) {
+  var templatePin = document.querySelector('#pin').content.querySelector('.map__pin');
   var pinElement = templatePin.cloneNode(true);
 
   pinElement.style.left = (array.location.x - PIN_WIDTH / 2) + 'px';
@@ -85,13 +96,91 @@ var renderPin = function (array) {
   return pinElement;
 };
 
+// Функция создания DOM-элемента на основе JS-объекта: PHOTO
+var renderPhoto = function (photo) {
+  var templatePhoto = document.querySelector('#card').content.querySelector('.popup__photo');
+  var photoElement = templatePhoto.cloneNode(true);
+  photoElement.src = photo;
+  return photoElement;
+};
+
+// Функция создания DOM-элемента на основе JS-объекта: FEATURE
+var renderFeature = function (feature) {
+  var templateFeature = document.querySelector('#card').content.querySelector('.popup__feature--' + feature);
+  var featureElement = templateFeature.cloneNode(true);
+  return featureElement;
+};
+
+// Функция перевода значений типа жилья
+var typeOfAccomodation = function translateType(type) {
+  var typeOffer = 'нет данных';
+  if (type === 'flat') {
+    typeOffer = 'Квартира';
+  } else if (type === 'bungalo') {
+    typeOffer = 'Бунгало';
+  } else if (type === 'house') {
+    typeOffer = 'Дом';
+  } else if (type === 'palace') {
+    typeOffer = 'Дворец';
+  }
+  return typeOffer;
+};
+
+// Функция удаления всех дочерних элементов, которые были в шаблоне
+var removeAllChildElement = function (parent) {
+  while (parent.firstChild) {
+    parent.removeChild(parent.firstChild);
+  }
+};
+
+// Функция создания фрагмента, принимает массив данных и функцию отрисовки элемента
+var getFragment = function (items, renderFunction) {
+  var fragment = document.createDocumentFragment();
+  for (var i = 0; i < items.length; i++) {
+    fragment.appendChild(renderFunction(items[i]));
+  }
+  return fragment;
+};
+
+var templateCard = document.querySelector('#card').content
+
+var renderCard = function (adv) {
+  var cardElement = templateCard.cloneNode(true);
+  cardElement.querySelector('.popup__title').textContent = adv.offer.title;
+  cardElement.querySelector('.popup__text--address').textContent = adv.offer.address;
+  cardElement.querySelector('.popup__text--price').textContent = adv.offer.price + ' ₽/ночь';
+  cardElement.querySelector('.popup__type').textContent = typeOfAccomodation(adv.offer.type);
+  cardElement.querySelector('.popup__text--capacity').textContent = adv.offer.rooms + ' комнаты для ' + adv.offer.guests + ' гостей';
+  cardElement.querySelector('.popup__text--time').textContent = 'Заезд после ' + adv.offer.checkin + ', выезд до ' + adv.offer.checkout;
+  cardElement.querySelector('.popup__description').textContent = adv.offer.description;
+  cardElement.querySelector('.popup__avatar').src = adv.author.avatar;
+
+  var features = cardElement.querySelector('.popup__features');
+  removeAllChildElement(features);
+  var fragmentOfferFeatures = getFragment(adv.offer.features, renderFeature);
+  features.appendChild(fragmentOfferFeatures);
+
+  var cardPhoto = cardElement.querySelector('.popup__photos');
+  removeAllChildElement(cardPhoto);
+  var fragmentOfferPhotos = getFragment(adv.offer.photos, renderPhoto);
+  cardPhoto.appendChild(fragmentOfferPhotos);
+
+  // Вставка карточки объявления в блок .map перед блоком .map__filters-container
+  var referenceElement = map.querySelector('.map__filters-container');
+  map.insertBefore(cardElement, referenceElement);
+
+  return cardElement;
+}
+
 // Функция заполнения блока DOM-элементами на основе массива JS-объектов
 var renderDomPins = function () {
   var advertisements = generateAdvertisement();
   var fragment = document.createDocumentFragment();
-  advertisements.forEach(function (advertisement) {
-    fragment.appendChild(renderPin(advertisement));
-  });
+  for (var i = 0; i < ADV_NUMBER; i++) {
+    fragment.appendChild(renderPin(advertisements[i]));
+    fragment.appendChild(renderCard(advertisements[0]));
+  }
+
   mapPins.appendChild(fragment);
 };
 renderDomPins();
