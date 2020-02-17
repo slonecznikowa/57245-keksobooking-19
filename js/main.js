@@ -41,7 +41,7 @@ function getRandomArrayItem(array) {
 function getRandomSubArray(array) {
   var arraySize = getRandomNumber(1, array.length);
   var subArray = [];
-  for (var i=0; i < arraySize; i++) {
+  for (var i = 0; i < arraySize; i++) {
     subArray.push(getRandomArrayItem(array));
   }
   return subArray;
@@ -142,7 +142,7 @@ var getFragment = function (items, renderFunction) {
   return fragment;
 };
 
-var templateCard = document.querySelector('#card').content
+var templateCard = document.querySelector('#card').content;
 
 var renderCard = function (adv) {
   var cardElement = templateCard.cloneNode(true);
@@ -170,7 +170,7 @@ var renderCard = function (adv) {
   map.insertBefore(cardElement, referenceElement);
 
   return cardElement;
-}
+};
 
 // Функция заполнения блока DOM-элементами на основе массива JS-объектов
 var renderDomPins = function () {
